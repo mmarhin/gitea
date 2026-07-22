@@ -1,0 +1,33 @@
+{{template "admin/layout_head" (dict "ctxData" . "pageClass" "admin new")}}
+	<div class="admin-setting-content">
+		<h4 class="ui top attached header">
+			{{ctx.Locale.Tr "admin.reputation.new_label"}}
+		</h4>
+		<div class="ui attached segment">
+			<form class="ui form" action="{{.Link}}" method="post">
+				{{template "base/disable_form_autofill"}}
+				<div class="required field {{if .Err_Name}}error{{end}}">
+					<label for="name">{{ctx.Locale.Tr "name"}}</label>
+					<input id="name" name="name" value="{{.name}}">
+				</div>
+				<div class="required field {{if .Err_Color}}error{{end}}">
+					<label for="color">{{ctx.Locale.Tr "admin.reputation.color"}}</label>
+					<div class="color-picker-combo" data-global-init="initColorPicker">
+						<!-- the "#" is optional because backend NormalizeColor is able to handle it, API also accepts both formats, and it is easier for users to directly copy-paste a hex value -->
+						<input name="color" value="{{.color}}" placeholder="#c320f6" required pattern="^#?([\dA-Fa-f]{3}|[\dA-Fa-f]{6})$" maxlength="7">
+						{{template "repo/issue/label_precolors"}}
+					</div>
+
+				</div>
+				<div class="field {{if .Err_Description}}error{{end}}">
+					<label for="description">{{ctx.Locale.Tr "admin.reputation.description"}}</label>
+					<input id="description" type="text" name="description" value="{{.description}}">
+				</div>
+
+				<div class="field">
+					<button class="ui primary button">{{ctx.Locale.Tr "create_new"}}</button>
+				</div>
+			</form>
+		</div>
+	</div>
+{{template "admin/layout_footer" .}}

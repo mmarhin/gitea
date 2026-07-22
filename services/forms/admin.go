@@ -71,3 +71,16 @@ func (f *AdminDashboardForm) Validate(req *http.Request, errs binding.Errors) bi
 	ctx := context.GetValidateContext(req)
 	return middleware.Validate(errs, ctx.Data, f, ctx.Locale)
 }
+
+// AdminCreateReputationLabelForm form for admin to create user
+type AdminCreateReputationLabelForm struct {
+	Name           string `binding:"Required;Name;MaxSize(40)"`
+	Description    string
+	Color          string `binding:"MaxSize(7)"`
+}
+
+// Validate validates form fields
+func (f *AdminCreateReputationLabelForm) Validate(req *http.Request, errs binding.Errors) binding.Errors {
+	ctx := context.GetValidateContext(req)
+	return middleware.Validate(errs, ctx.Data, f, ctx.Locale)
+}

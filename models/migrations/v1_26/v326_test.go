@@ -20,5 +20,4 @@ func Test_CreateReputationLabelTable(t *testing.T) {
 	tables := base.LoadTableSchemasMap(t, x)
 	assert.Contains(t, tables, "reputation_label")
 	assert.Contains(t, tables, "user_reputation_label")
-	assert.Contains(t, tables, "repo_reputation_label")
 }

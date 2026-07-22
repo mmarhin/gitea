@@ -757,6 +757,17 @@ func registerWebRoutes(m *web.Router) {
 			m.Get("", admin.Organizations)
 		})
 
+		m.Group("/reputation", func() {
+			m.Get("", admin.ReputationLabels)
+			m.Get("/{name}", admin.ViewReputationLabel)
+			m.Post("/{name}/add", admin.AddReputationLabel)
+                        // TODO
+			// m.Post("/{name}/remove", admin.RemoveReputationLabel)
+			// m.Post("/{name}/edit", admin.EditReputationLabel)
+			m.Combo("/new").Get(admin.NewReputationLabel).Post(web.Bind(forms.AdminCreateReputationLabelForm{}), admin.NewReputationLabelPost)
+			m.Post("/delete", admin.DeleteReputationLabel)
+		})
+
 		m.Group("/repos", func() {
 			m.Get("", admin.Repos)
 			m.Combo("/unadopted").Get(admin.UnadoptedRepos).Post(admin.AdoptOrDeleteRepository)

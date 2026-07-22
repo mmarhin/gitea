@@ -6,8 +6,11 @@ package user
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"code.gitea.io/gitea/models/db"
+
+	"xorm.io/builder"
 )
 
 // ReputationLabel represent a reputation label
@@ -26,18 +29,9 @@ type UserReputationLabel struct {
 	UserID            int64 `xorm:"INDEX"`
 }
 
-// UserReputationLabel represents a relation between user and //
-// ReputationLabel
-type RepoReputationLabel struct {
-	ID                int64 `xorm:"pk autoincr"`
-	ReputationLabelID int64
-	RepoID            int64 `xorm:"INDEX"`
-}
-
 func init() {
 	db.RegisterModel(new(ReputationLabel))
 	db.RegisterModel(new(UserReputationLabel))
-	db.RegisterModel(new(RepoReputationLabel))
 }
 
 // GetUserReputationLabels returns the user's reputation labels.
@@ -58,10 +52,29 @@ func CreateReputationLabel(ctx context.Context, label *ReputationLabel) error {
 	return err
 }
 
-// GetAllReputationLabels returns all reputation label.
-func GetAllReputationLabels(ctx context.Context) ([]*ReputationLabel, error) {
-	labels := make([]*ReputationLabel, 0)
-	return labels, db.GetEngine(ctx).OrderBy("id").Find(&labels)
+// SearchReputationLabelOptions are options to search labels for the admin panel
+type SearchReputationLabelOptions struct {
+	db.ListOptions
+	Keyword string
+}
+
+// SearchReputationLabels returns all reputation label.
+func SearchReputationLabels(ctx context.Context, opts *SearchReputationLabelOptions) ([]*ReputationLabel, error) {
+	cond := builder.NewCond()
+	if len(opts.Keyword) > 0 {
+		likeStr := "%" + strings.ToLower(opts.Keyword) + "%"
+		cond = builder.Like{"lower(name)", likeStr}
+	}
+
+	opts.SetDefaultValues()
+
+	labels := make([]*ReputationLabel, 0, opts.PageSize)
+	err := db.GetEngine(ctx).
+		Where(cond).
+		Limit(opts.PageSize, (opts.Page-1)*opts.PageSize).
+		Find(&labels)
+
+	return labels, err
 }
 
 // GetReputationLabel returns a reputation label.
@@ -113,81 +126,27 @@ func AddUserReputationLabels(ctx context.Context, u *User, labels []*ReputationL
 	})
 }
 
-// RemoveUserReputationLabel removes a label from a user.
-func RemoveUserReputationLabel(ctx context.Context, u *User, label *ReputationLabel) error {
-	return RemoveUserReputationLabels(ctx, u, []*ReputationLabel{label})
-}
-
-// RemoveUserReputationLabels removes labels from a user.
-func RemoveUserReputationLabels(ctx context.Context, u *User, labels []*ReputationLabel) error {
-	return db.WithTx(ctx, func(ctx context.Context) error {
-		for _, label := range labels {
-			if _, err := db.GetEngine(ctx).
-				Join("INNER", "reputation_label", "reputation_label.id = `user_reputation_label`.reputation_label_id").
-				Where("`user_reputation_label`.user_id=? AND `reputation_label`.name=?", u.ID, label.Name).
-				Delete(&UserReputationLabel{}); err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-}
-
 // RemoveAllUserReputationLabels removes all labels from a user.
 func RemoveAllUserReputationLabels(ctx context.Context, u *User) error {
 	_, err := db.GetEngine(ctx).Where("user_id=?", u.ID).Delete(&UserReputationLabel{})
 	return err
 }
 
-// AddRepoReputationLabel adds a reputation label to a repo.
-func AddRepoReputationLabel(ctx context.Context, rID int64, label *ReputationLabel) error {
-	return AddRepoReputationLabels(ctx, rID, []*ReputationLabel{label})
-}
+func GetReputationLabelRelated(ctx context.Context, label *ReputationLabel) ([]*User, []*User, error) {
+	users := make([]*User, 0)
+	orgs := make([]*User, 0)
 
-// AddRepoReputationLabels adds labels to a repo.
-func AddRepoReputationLabels(ctx context.Context, rID int64, labels []*ReputationLabel) error {
-	return db.WithTx(ctx, func(ctx context.Context) error {
-		for _, label := range labels {
-			// hydrate label and check if it exists
-			has, err := db.GetEngine(ctx).Where("name=?", label.Name).Get(label)
-			if err != nil {
-				return err
-			} else if !has {
-				return fmt.Errorf("label with name %s doesn't exist", label.Name)
-			}
-			if err := db.Insert(ctx, &RepoReputationLabel{
-				ReputationLabelID: label.ID,
-				RepoID:  rID,
-			}); err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-}
+	err := db.GetEngine(ctx).
+		Join("INNER", "user_reputation_label", "user.id = `user_reputation_label`.user_id").
+		Where("`user_reputation_label`.reputation_label_id=?", label.ID).
+		And("`user`.type=?", UserTypeIndividual).
+		Find(&users)
 
-// RemoveRepoReputationLabel removes a label from a repo.
-func RemoveRepoReputationLabel(ctx context.Context, rID int64, label *ReputationLabel) error {
-	return RemoveRepoReputationLabels(ctx, rID, []*ReputationLabel{label})
-}
+	err = db.GetEngine(ctx).
+		Join("INNER", "user_reputation_label", "user.id = `user_reputation_label`.user_id").
+		Where("`user_reputation_label`.reputation_label_id=?", label.ID).
+		And("`user`.type=?", UserTypeOrganization).
+		Find(&orgs)
 
-// RemoveRepoReputationLabels removes labels from a repo.
-func RemoveRepoReputationLabels(ctx context.Context, rID int64, labels []*ReputationLabel) error {
-	return db.WithTx(ctx, func(ctx context.Context) error {
-		for _, label := range labels {
-			if _, err := db.GetEngine(ctx).
-				Join("INNER", "reputation_label", "reputation_label.id = `repo_reputation_label`.reputation_label_id").
-				Where("`repo_reputation_label`.repo_id=? AND `reputation_label`.name=?", rID, label.Name).
-				Delete(&RepoReputationLabel{}); err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-}
-
-// RemoveAllRepoReputationLabels removes all labels from a repo.
-func RemoveAllRepoReputationLabels(ctx context.Context, rID int64) error {
-	_, err := db.GetEngine(ctx).Where("repo_id=?", rID).Delete(&RepoReputationLabel{})
-	return err
+	return users, orgs, err
 }

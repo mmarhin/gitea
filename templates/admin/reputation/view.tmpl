@@ -1,0 +1,67 @@
+{{template "admin/layout_head" (dict "ctxData" . "pageClass" "admin view user")}}
+
+<div class="admin-setting-content">
+	<h4 class="ui top attached header">
+		{{.Title}}
+		<div class="ui right">
+			<a class="ui primary tiny button show-modal" href data-modal="#change-modal"
+				data-modal-name="{{.Label.Name}}"
+				data-modal-color="{{.Label.Color}}"
+				data-modal-description="{{.Label.Description}}">
+				{{ctx.Locale.Tr "admin.reputation.edit"}}
+			</a>
+		</div>
+	</h4>
+	<div class="ui attached segment">
+		{{template "shared/user/reputation_label" .Label}}
+		<p>{{ .Label.Description }}</p>
+		<form class="ui form" action="{{AppSubUrl}}/-/admin/reputation/{{.Label.Name}}/add" method="post">
+			<div id="search-user-box" class="ui search tw-mr-2" data-include-orgs="true">
+				<div class="ui input">
+					<input class="prompt" name="uname" placeholder="{{ctx.Locale.Tr "admin.reputation.search"}}" autocomplete="off" required>
+				</div>
+				<button class="ui primary button">{{ctx.Locale.Tr "admin.reputation.add"}}</button>
+			</div>
+		</form>
+	</div>
+	<h4 class="ui top attached header">
+		{{ctx.Locale.Tr "settings.organization"}} ({{ctx.Locale.Tr "admin.total" .OrgsTotal}})
+	</h4>
+	<div class="ui attached segment">
+		{{template "explore/user_list" .Orgs}}
+	</div>
+	<h4 class="ui top attached header">
+		{{ctx.Locale.Tr "settings.users"}} ({{ctx.Locale.Tr "admin.total" .UsersTotal}})
+	</h4>
+	<div class="ui attached segment">
+		{{template "explore/user_list" .Users}}
+	</div>
+
+	<div class="ui g-modal-confirm modal" id="change-modal">
+		<div class="header">
+			{{ctx.Locale.Tr "admin.reputation.change_label_header"}}
+		</div>
+		<form class="content ui form" action="{{AppSubUrl}}/-/admin/reputation/edit" method="post">
+			<div class="required field">
+				<label for="name">{{ctx.Locale.Tr "name"}}</label>
+				<input id="name" name="name" value="{{.Name}}">
+			</div>
+			<div class="required field">
+				<label for="color">{{ctx.Locale.Tr "admin.reputation.color"}}</label>
+				<div class="color-picker-combo" data-global-init="initColorPicker">
+					<!-- the "#" is optional because backend NormalizeColor is able to handle it, API also accepts both formats, and it is easier for users to directly copy-paste a hex value -->
+					<input name="color" value="{{.Color}}" placeholder="#c320f6" required pattern="^#?([\dA-Fa-f]{3}|[\dA-Fa-f]{6})$" maxlength="7">
+					{{template "repo/issue/label_precolors"}}
+				</div>
+			</div>
+			<div class="field">
+				<label for="description">{{ctx.Locale.Tr "admin.reputation.description"}}</label>
+				<input id="description" type="text" name="description" value="{{.Description}}">
+			</div>
+
+			{{template "base/modal_actions_confirm" .}}
+		</form>
+	</div>
+</div>
+
+{{template "admin/layout_footer" .}}

@@ -21,18 +21,8 @@ func CreateReputationLabelTable(x *xorm.Engine) error {
 		UserID            int64 `xorm:"INDEX"`
 	}
 
-	type RepoReputationLabel struct {
-		ID                int64 `xorm:"pk autoincr"`
-		ReputationLabelID int64
-		RepoID            int64 `xorm:"INDEX"`
-	}
-
 	if err := x.Sync(new(ReputationLabel)); err != nil {
 		return err
 	}
-	if err := x.Sync(new(UserReputationLabel)); err != nil {
-		return err
-	}
-
-	return x.Sync(new(RepoReputationLabel))
+	return x.Sync(new(UserReputationLabel))
 }
