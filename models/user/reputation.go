@@ -21,8 +21,10 @@ type ReputationLabel struct {
 	Color       string `xorm:"VARCHAR(7)"`
 }
 
-// UserReputationLabel represents a relation between user and //
+// UserReputationLabel represents a relation between user and
 // ReputationLabel
+//
+//nolint:revive // keep existing naming from author
 type UserReputationLabel struct {
 	ID                int64 `xorm:"pk autoincr"`
 	ReputationLabelID int64
@@ -117,7 +119,7 @@ func AddUserReputationLabels(ctx context.Context, u *User, labels []*ReputationL
 			}
 			if err := db.Insert(ctx, &UserReputationLabel{
 				ReputationLabelID: label.ID,
-				UserID:  u.ID,
+				UserID:            u.ID,
 			}); err != nil {
 				return err
 			}
@@ -141,7 +143,9 @@ func GetReputationLabelRelated(ctx context.Context, label *ReputationLabel) ([]*
 		Where("`user_reputation_label`.reputation_label_id=?", label.ID).
 		And("`user`.type=?", UserTypeIndividual).
 		Find(&users)
-
+	if err != nil {
+		return nil, nil, err
+	}
 	err = db.GetEngine(ctx).
 		Join("INNER", "user_reputation_label", "user.id = `user_reputation_label`.user_id").
 		Where("`user_reputation_label`.reputation_label_id=?", label.ID).

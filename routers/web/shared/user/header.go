@@ -74,6 +74,13 @@ func prepareContextForProfileBigAvatar(ctx *context.Context) {
 	}
 	ctx.Data["Badges"] = badges
 
+	reputationLabels, _, err := user_model.GetUserReputationLabels(ctx, ctx.ContextUser)
+	if err != nil {
+		ctx.ServerError("GetUserReputationLabels", err)
+		return
+	}
+	ctx.Data["ReputationLabels"] = reputationLabels
+
 	// in case the numbers are already provided by other functions, no need to query again (which is slow)
 	if _, ok := ctx.Data["NumFollowers"]; !ok {
 		_, ctx.Data["NumFollowers"], _ = user_model.GetUserFollowers(ctx, ctx.ContextUser, ctx.Doer, db.ListOptions{PageSize: 1, Page: 1})
@@ -160,6 +167,19 @@ func RenderUserOrgHeader(ctx *context.Context) (result *PrepareOwnerHeaderResult
 		ctx.Data["HasUserProfileReadme"] = profileReadmeBlob != nil
 		prepareContextForProfileBigAvatar(ctx)
 	}
+
+	targetUser := ctx.ContextUser
+	if targetUser == nil && ctx.Org != nil && ctx.Org.Organization != nil {
+		targetUser = ctx.Org.Organization.AsUser()
+	}
+	if targetUser != nil {
+		reputationLabels, _, err := user_model.GetUserReputationLabels(ctx, targetUser)
+		if err != nil {
+			return nil, err
+		}
+		ctx.Data["ReputationLabels"] = reputationLabels
+	}
+
 	return result, nil
 }
 

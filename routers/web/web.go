@@ -761,7 +761,7 @@ func registerWebRoutes(m *web.Router) {
 			m.Get("", admin.ReputationLabels)
 			m.Get("/{name}", admin.ViewReputationLabel)
 			m.Post("/{name}/add", admin.AddReputationLabel)
-                        // TODO
+			// TODO
 			// m.Post("/{name}/remove", admin.RemoveReputationLabel)
 			// m.Post("/{name}/edit", admin.EditReputationLabel)
 			m.Combo("/new").Get(admin.NewReputationLabel).Post(web.Bind(forms.AdminCreateReputationLabelForm{}), admin.NewReputationLabelPost)

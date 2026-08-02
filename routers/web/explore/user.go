@@ -116,6 +116,16 @@ func RenderUserSearch(ctx *context.Context, opts user_model.SearchUserOptions, t
 	ctx.Data["Total"] = count
 	ctx.Data["Users"] = users
 	ctx.Data["UsersTwoFaStatus"] = user_model.UserList(users).GetTwoFaStatus(ctx)
+
+	userReputationLabels := make(map[int64][]*user_model.ReputationLabel, len(users))
+	for _, u := range users {
+		labels, _, err := user_model.GetUserReputationLabels(ctx, u)
+		if err == nil && len(labels) > 0 {
+			userReputationLabels[u.ID] = labels
+		}
+	}
+	ctx.Data["UserReputationLabels"] = userReputationLabels
+
 	ctx.Data["ShowUserEmail"] = setting.UI.ShowUserEmail
 	ctx.Data["IsRepoIndexerEnabled"] = setting.Indexer.RepoIndexerEnabled
 

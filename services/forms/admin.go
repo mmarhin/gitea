@@ -74,9 +74,9 @@ func (f *AdminDashboardForm) Validate(req *http.Request, errs binding.Errors) bi
 
 // AdminCreateReputationLabelForm form for admin to create user
 type AdminCreateReputationLabelForm struct {
-	Name           string `binding:"Required;Name;MaxSize(40)"`
-	Description    string
-	Color          string `binding:"MaxSize(7)"`
+	Name        string `binding:"Required;Name;MaxSize(40)"`
+	Description string
+	Color       string `binding:"MaxSize(7)"`
 }
 
 // Validate validates form fields

@@ -3,19 +3,13 @@
 <div class="admin-setting-content">
 	<h4 class="ui top attached header">
 		{{.Title}}
-		<div class="ui right">
-			<a class="ui primary tiny button show-modal" href data-modal="#change-modal"
-				data-modal-name="{{.Label.Name}}"
-				data-modal-color="{{.Label.Color}}"
-				data-modal-description="{{.Label.Description}}">
-				{{ctx.Locale.Tr "admin.reputation.edit"}}
-			</a>
-		</div>
+		<!-- Edit button hidden for now since backend handler is missing -->
 	</h4>
 	<div class="ui attached segment">
 		{{template "shared/user/reputation_label" .Label}}
-		<p>{{ .Label.Description }}</p>
+		<p>{{.Label.Description}}</p>
 		<form class="ui form" action="{{AppSubUrl}}/-/admin/reputation/{{.Label.Name}}/add" method="post">
+			{{.CsrfTokenHtml}}
 			<div id="search-user-box" class="ui search tw-mr-2" data-include-orgs="true">
 				<div class="ui input">
 					<input class="prompt" name="uname" placeholder="{{ctx.Locale.Tr "admin.reputation.search"}}" autocomplete="off" required>

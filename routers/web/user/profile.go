@@ -63,6 +63,11 @@ func userProfile(ctx *context.Context) {
 	ctx.Data["Title"] = ctx.ContextUser.DisplayName()
 	ctx.Data["PageIsUserProfile"] = true
 
+	labels, _, err := user_model.GetUserReputationLabels(ctx, ctx.ContextUser)
+	if err == nil {
+		ctx.Data["ReputationLabels"] = labels
+	}
+
 	profileDbRepo, profileReadmeBlob := shared_user.FindOwnerProfileReadme(ctx, ctx.Doer)
 
 	prepareUserProfileTabData(ctx, profileDbRepo, profileReadmeBlob)

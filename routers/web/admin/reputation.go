@@ -8,11 +8,11 @@ import (
 
 	"code.gitea.io/gitea/models/db"
 	user_model "code.gitea.io/gitea/models/user"
-	"code.gitea.io/gitea/modules/templates"
-	"code.gitea.io/gitea/services/context"
 	"code.gitea.io/gitea/modules/log"
-	"code.gitea.io/gitea/modules/web"
 	"code.gitea.io/gitea/modules/setting"
+	"code.gitea.io/gitea/modules/templates"
+	"code.gitea.io/gitea/modules/web"
+	"code.gitea.io/gitea/services/context"
 	"code.gitea.io/gitea/services/forms"
 )
 
@@ -124,9 +124,9 @@ func ViewReputationLabel(ctx *context.Context) {
 	}
 
 	type UserList struct {
-		Users []*user_model.User
-		ShowUserEmail bool
-		IsSigned bool
+		Users            []*user_model.User
+		ShowUserEmail    bool
+		IsSigned         bool
 		PageIsAdminUsers bool
 	}
 
@@ -159,6 +159,5 @@ func AddReputationLabel(ctx *context.Context) {
 	}
 
 	ctx.Flash.Success(ctx.Tr("admin.reputation.add_success", uname))
-	ctx.Flash.Success("AAAAAAAAAAA" + user.Name + l.Name)
 	ctx.Redirect(setting.AppSubURL + "/-/admin/reputation/" + l.Name)
 }

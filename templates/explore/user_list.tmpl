@@ -7,6 +7,10 @@
 			<div class="flex-item-main">
 				<div class="flex-item-title">
 					{{template "shared/user/name" .}}
+					{{$labels := index $.UserReputationLabels .ID}}
+					{{range $labels}}
+						{{template "shared/user/reputation_label" .}}
+					{{end}}
 					{{if .Visibility.IsPrivate}}
 						<span class="ui basic tiny label">{{ctx.Locale.Tr "repo.desc.private"}}</span>
 					{{end}}
